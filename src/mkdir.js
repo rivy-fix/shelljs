@@ -28,8 +28,14 @@ function mkdirSyncRecursive(dir) {
   // Base dir does not exist, go recursive
   mkdirSyncRecursive(baseDir);
 
-  // Base dir created, can create dir
-  fs.mkdirSync(dir, parseInt('0777', 8));
+  try {
+    // Base dir created, can create dir
+    fs.mkdirSync(dir, parseInt('0777', 8));
+  } catch (e) {
+    // swallow directory exists errors ('EEXIST'); mitigates race conditions
+    /* istanbul ignore next */
+    if (e.code !== 'EEXIST' || common.statNoFollowLinks(dir).isFile()) { throw e; }
+  }
 }
 
 //@
